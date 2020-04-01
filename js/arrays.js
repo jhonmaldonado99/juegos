@@ -4,4 +4,4 @@ function inicializar() {
 
 }
 
-var lista = [""]
+var lista = [""];
