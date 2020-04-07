@@ -11,6 +11,9 @@ var tierra = '#c6892f';
 var llave = '#c6bc00';
 
 var protagonista;
+var enemigo = [];
+
+var tilemap;
 
 var escenario = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -31,20 +34,12 @@ function dibujaEscenario() {
     for (y = 0; y < 10; y++) {
         for (x = 0; x < 15; x++) {
 
-            if (escenario[y][x] == 0)
-                color = muro;
+            var tile = escenario[y][x];
+            // ctx.fillStyle = color;
+            // ctx.fillRect(x * anchoF, y * altoF, anchoF, altoF);
 
-            if (escenario[y][x] == 1)
-                color = puerta;
+            ctx.drawImage(tilemap, tile * 32, 0, 32, 32, anchoF * x, altoF * y, anchoF, altoF);
 
-            if (escenario[y][x] == 2)
-                color = tierra;
-
-            if (escenario[y][x] == 3)
-                color = llave;
-
-            ctx.fillStyle = color;
-            ctx.fillRect(x * anchoF, y * altoF, anchoF, altoF);
         }
     }
 
@@ -52,6 +47,77 @@ function dibujaEscenario() {
 }
 
 
+// CLASE ENEMIGO
+var malo = function(x, y) {
+    this.x = x;
+    this.y = y;
+
+    this.direccion = Math.floor(Math.random() * 4);
+
+    this.retraso = 30;
+    this.fotograma = 0;
+
+    this.dibuja = function() {
+        ctx.drawImage(tilemap, 0, 32, 32, 32, this.x * anchoF, this.y * altoF, anchoF, altoF);
+    }
+
+    this.compruebaColision = function(x, y) {
+        var colisiona = false;
+
+        if (escenario[y][x] == 0) {
+            colisiona = true;
+        }
+        return colisiona;
+    }
+
+    this.mueve = function() {
+
+        if (this.fotograma < this.retraso) {
+            this.fotograma++;
+        } else {
+            this.fotograma = 0;
+
+            // Arriba
+            if (this.direccion == 0) {
+                if (this.compruebaColision(this.x, this.y - 1) == false) {
+                    this.y--;
+                } else {
+                    this.direccion = Math.floor(Math.random() * 4);
+                }
+            }
+
+            // Abajo
+            if (this.direccion == 1) {
+                if (this.compruebaColision(this.x, this.y + 1) == false) {
+                    this.y++;
+                } else {
+                    this.direccion = Math.floor(Math.random() * 4);
+                }
+            }
+
+            // Izquierda
+            if (this.direccion == 2) {
+                if (this.compruebaColision(this.x - 1, this.y) == false) {
+                    this.x--;
+                } else {
+                    this.direccion = Math.floor(Math.random() * 4);
+                }
+            }
+
+            // Derecha
+            if (this.direccion == 3) {
+                if (this.compruebaColision(this.x + 1, this.y) == false) {
+                    this.x++;
+                } else {
+                    this.direccion = Math.floor(Math.random() * 4);
+                }
+            }
+
+
+        }
+
+    }
+}
 
 
 
@@ -64,8 +130,12 @@ var jugador = function() {
     this.llave = false;
 
     this.dibuja = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x * anchoF, this.y * altoF, anchoF, altoF);
+
+        // ctx.fillStyle = this.color;k
+        // ctx.fillRect(this.x * anchoF, this.y * altoF, anchoF, altoF);
+
+        ctx.drawImage(tilemap, 32, 32, 32, 32, this.x * anchoF, this.y * altoF, anchoF, altoF);
+
     }
 
 
@@ -149,6 +219,13 @@ function inicializa() {
     //CREAMOS AL JUGADOR
     protagonista = new jugador();
 
+    enemigo.push(new malo(3, 3));
+    enemigo.push(new malo(5, 5));
+    enemigo.push(new malo(7, 7));
+
+    tilemap = new Image();
+    tilemap.src = 'img/tilemap.png';
+
     //LECTURA DEL TECLADO
     document.addEventListener('keydown', function(tecla) {
 
@@ -186,4 +263,9 @@ function principal() {
     borraCanvas();
     dibujaEscenario();
     protagonista.dibuja();
+
+    for (let c = 0; c < enemigo.length; c++) {
+        enemigo[c].mueve();
+        enemigo[c].dibuja();
+    }
 }
