@@ -14,6 +14,7 @@ var protagonista;
 var enemigo = [];
 
 var tilemap;
+var imgAntorcha;
 
 var escenario = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -46,6 +47,36 @@ function dibujaEscenario() {
 
 }
 
+var antorcha = function(x, y) {
+    this.x = x;
+    this.y = y;
+
+    this.fotograma = 0;
+    this.contador = 0;
+    this.retraso = 10;
+
+    this.cambiaFotograma = function() {
+        if (this.fotograma < 3) {
+            this.fotograma++;
+        } else {
+            this.fotograma = 0;
+        }
+    }
+
+    this.dibuja = function() {
+
+        if (this.contador < this.retraso) {
+            this.contador++;
+        } else {
+            this.contador = 0;
+            this.cambiaFotograma();
+        }
+
+        ctx.drawImage(tilemap, this.fotograma * 32, 64, 32, 32, anchoF * x, altoF * y, anchoF, altoF);
+
+    }
+
+}
 
 // CLASE ENEMIGO
 var malo = function(x, y) {
@@ -71,6 +102,8 @@ var malo = function(x, y) {
     }
 
     this.mueve = function() {
+
+        protagonista.colisionEnemigo(this.x, this.y);
 
         if (this.fotograma < this.retraso) {
             this.fotograma++;
@@ -138,6 +171,12 @@ var jugador = function() {
 
     }
 
+    this.colisionEnemigo = function(x, y) {
+        if (this.x == x && this.y == y) {
+            this.muerte();
+        }
+    }
+
 
     this.margenes = function(x, y) {
         var colision = false;
@@ -181,7 +220,15 @@ var jugador = function() {
     }
 
     this.victoria = function() {
-        console.log("has ganado");
+        alert("Ganaste!!!")
+        this.y = 1;
+        this.x = 1;
+        this.llave = false;
+        escenario[8][3] = 3;
+    }
+
+    this.muerte = function() {
+        alert("Perdiste!!!")
         this.y = 1;
         this.x = 1;
         this.llave = false;
@@ -219,9 +266,12 @@ function inicializa() {
     //CREAMOS AL JUGADOR
     protagonista = new jugador();
 
-    enemigo.push(new malo(3, 3));
-    enemigo.push(new malo(5, 5));
-    enemigo.push(new malo(7, 7));
+    //Antorcha
+    imgAntorcha = new antorcha(0, 0);
+
+    enemigo.push(new malo(2, 3));
+    enemigo.push(new malo(7, 1));
+    enemigo.push(new malo(7, 6));
 
     tilemap = new Image();
     tilemap.src = 'img/tilemap.png';
@@ -262,6 +312,7 @@ function borraCanvas() {
 function principal() {
     borraCanvas();
     dibujaEscenario();
+    imgAntorcha.dibuja();
     protagonista.dibuja();
 
     for (let c = 0; c < enemigo.length; c++) {
